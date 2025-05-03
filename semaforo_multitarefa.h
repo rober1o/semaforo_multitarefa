@@ -38,15 +38,26 @@
 #define BRILHO_PADRAO 100     // Brilho padrão
 
 // Definições dos LEDs
-#define led1 11
-#define led2 12
+#define LED_VERDE 11
+#define LED_VERMELHO 13
+#define LED_AZUL 12
+#define BOTAO_A 5
+
+
 
 // Instâncias e variáveis globais
 PIO pio;  // Instância do PIO
 int sm;    // Máquina de estado do PIO
+bool modo_noturno = false;
+bool estado_verde = false;
+bool estado_amarelo = false;
+bool estado_vermelho = true;
 
-void vBlinkLed1Task();
-void vBlinkLed2Task();
+void vAcionarBotao(void *pvParameters);
+void vDelayComModoDiurno(TickType_t delay_ms);
+void vSemaforo_noturno();
+void vDelayComModoNoturno(int tempo_ms);
+void vSemaforo_diurno();
 void vDisplay3Task();
 void desenha_fig(uint32_t *_matriz, uint8_t _intensidade, PIO pio, uint sm);
 #endif   // SEMAFORO_MULTITAREFA
