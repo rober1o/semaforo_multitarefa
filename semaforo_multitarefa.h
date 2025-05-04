@@ -53,9 +53,9 @@
 PIO pio;  // Instância do PIO
 int sm;    // Máquina de estado do PIO
 bool modo_noturno = false;
-bool estado_verde = false;
+bool estado_verde = true;
 bool estado_amarelo = false;
-bool estado_vermelho = true;
+bool estado_vermelho = false;
 ssd1306_t ssd;
 
 void vAcionarBotao(void *pvParameters);
@@ -67,4 +67,5 @@ void vAtualizarDisplay();
 void configurar_matriz_leds();
 void inicializar_display_i2c();
 void desenha_fig(uint32_t *_matriz, uint8_t _intensidade, PIO pio, uint sm);
+void draw_ssd1306(uint32_t *_matriz);
 #endif   // SEMAFORO_MULTITAREFA

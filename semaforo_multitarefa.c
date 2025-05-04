@@ -40,18 +40,19 @@ void vSemaforo_diurno() // TAREFA PARA EXIBIR O SEMAFORNO NO MODO DIURNO
             estado_amarelo = false;
             estado_verde = false;
             desenha_fig(matriz_apagada, BRILHO_PADRAO, pio, sm);
-            vTaskDelay(pdMS_TO_TICKS(100)); // Espera curta só para evitar loop apertado
+            vTaskDelay(pdMS_TO_TICKS(10)); // Espera curta só para evitar loop apertado
             continue;
         }
 
-        estado_vermelho = true; // DEFINE O ESTADO VERMELHO DO SEMAFORO POR 7 SEGUNDOS
-        desenha_fig(semaforo_vermelho, BRILHO_PADRAO, pio, sm);
-        vTaskDelay(pdMS_TO_TICKS(2000));
-        // vDelayComModoDiurno(2000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
+        estado_verde = true; // DEFINE O ESTADO VERDE DO SEMAFORO POR 4 SEGUNDOS
+        desenha_fig(semaforo_verde, BRILHO_PADRAO, pio, sm);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        // vDelayComModoDiurno(1000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
+
         if (modo_noturno)
             continue;
 
-        estado_vermelho = false;
+        estado_verde = false;
         estado_amarelo = true; // DEFINE O ESTADO AMARELO DO SEMAFORO POR 1 SEGUNDOS
         desenha_fig(semaforo_amarelo, BRILHO_PADRAO, pio, sm);
         vTaskDelay(pdMS_TO_TICKS(500));
@@ -60,11 +61,12 @@ void vSemaforo_diurno() // TAREFA PARA EXIBIR O SEMAFORNO NO MODO DIURNO
             continue;
 
         estado_amarelo = false;
-        estado_verde = true; // DEFINE O ESTADO VERDE DO SEMAFORO POR 4 SEGUNDOS
-        desenha_fig(semaforo_verde, BRILHO_PADRAO, pio, sm);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        // vDelayComModoDiurno(1000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
-        estado_verde = false;
+
+        estado_vermelho = true; // DEFINE O ESTADO VERMELHO DO SEMAFORO POR 7 SEGUNDOS
+        desenha_fig(semaforo_vermelho, BRILHO_PADRAO, pio, sm);
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        // vDelayComModoDiurno(2000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
+        estado_vermelho = false;
     }
 }
 
@@ -123,8 +125,9 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
                 sprintf(str_y, "%d", contador);
                 ssd1306_fill(&ssd, !cor);
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-                ssd1306_draw_string(&ssd, "MODO NORMAL", 20, 16);
                 ssd1306_draw_string(&ssd, "VERMELHO", 32, 30);
+                ssd1306_draw_string(&ssd, "--pare--", 34, 45);
+                draw_ssd1306(bonequinho);
                 ssd1306_send_data(&ssd);
             }
             else if (estado_amarelo) // SE O SEMAFORO ESTIVER NO ESTADO AMARELO EXIBE AMARELO NO DISPLAY
@@ -132,8 +135,10 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
                 sprintf(str_y, "%d", contador);
                 ssd1306_fill(&ssd, !cor);
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-                ssd1306_draw_string(&ssd, "MODO NORMAL", 20, 16);
+
                 ssd1306_draw_string(&ssd, "AMARELO", 34, 30);
+                ssd1306_draw_string(&ssd, "--atencao--", 16, 45);
+                draw_ssd1306(bonequinho);
                 ssd1306_send_data(&ssd);
             }
             else if (estado_verde) // SE O SEMAFORO ESTIVER NO ESTADO VERDE EXIBE VERDE NO DISPLAY
@@ -141,9 +146,12 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
                 sprintf(str_y, "%d", contador);
                 ssd1306_fill(&ssd, !cor);
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-                ssd1306_draw_string(&ssd, "MODO NORMAL", 20, 16);
                 ssd1306_draw_string(&ssd, "VERDE", 44, 30);
+                ssd1306_draw_string(&ssd, "--atravesse--", 12, 45);
+                draw_ssd1306(bonequinho);
                 ssd1306_send_data(&ssd);
+                
+
             }
             vTaskDelay(pdMS_TO_TICKS(10));
         }
@@ -166,10 +174,9 @@ void vTocarBuzzer(void *pvParameters) {
                 pwm_set_enabled(slice, true);
                 vTaskDelay(pdMS_TO_TICKS(500));
                 pwm_set_enabled(slice, false);
-
-                // Divide o silêncio de 1500ms em 3x de 500ms
-                for (int i = 0; i < 3; i++) {
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                // Divide o silêncio de 1500ms em 5x de 300ms verificando se em algum momento o botão foi pressionado
+                for (int i = 0; i < 5; i++) {
+                    vTaskDelay(pdMS_TO_TICKS(300));
                     if (!estado_vermelho) break;
                 }
             } 
@@ -326,6 +333,22 @@ void inicializar_display_i2c(){ //FUNÇÃO PARA INICIALIZAR O I2C DO DISPLAY
     ssd1306_fill(&ssd, false);
     ssd1306_send_data(&ssd);
 }
+
+void draw_ssd1306(uint32_t *_matriz) {
+    for (int i = 0; i < 8192; i++) {
+        int x = i % 128;       // coluna
+        int y = i / 128;       // linha
+
+        if (_matriz[i] > 0x00000000) {
+            ssd1306_pixel(&ssd, x, y, true);
+        }
+    }
+
+    // Envia os dados desenhados para o display
+    // ssd1306_send_data(&ssd);
+}
+
+
 
 int main()
 {
