@@ -1,6 +1,12 @@
 #include "semaforo_multitarefa.h"
 
-void vAcionarBotao(void *pvParameters)
+/*******************************************************
+
+                      TAREFAS
+
+****************************************************** */
+
+void vAcionarBotao(void *pvParameters) // TAFERA PARA ALTERNA ENTRE MODO DIURNO  NPOTURNO
 {
     gpio_init(BOTAO_A);
     gpio_set_dir(BOTAO_A, GPIO_IN);
@@ -11,7 +17,6 @@ void vAcionarBotao(void *pvParameters)
     {
         bool botao_atual = gpio_get(BOTAO_A);
 
-        // Verifica transição: de solto (1) para pressionado (0)
         if (botao_anterior && !botao_atual)
         {
             modo_noturno = !modo_noturno; // Alterna o modo
@@ -23,62 +28,14 @@ void vAcionarBotao(void *pvParameters)
     }
 }
 
-void vDelayComModoDiurno(TickType_t delay_ms)
+void vSemaforo_diurno() // TAREFA PARA EXIBIR O SEMAFORNO NO MODO DIURNO
 {
-    const TickType_t passo = 100; // 100ms
-    TickType_t total = 0;
-
-    while (total < delay_ms)
-    {
-        if (!modo_noturno)
-            break;
-        vTaskDelay(pdMS_TO_TICKS(passo));
-        total += passo;
-    }
-}
-
-void vSemaforo_noturno()
-{
-    gpio_init(LED_VERDE);
-    gpio_init(LED_VERMELHO);
-    gpio_set_dir(LED_VERDE, GPIO_OUT);
-    gpio_set_dir(LED_VERMELHO, GPIO_OUT);
-
+    configurar_matriz_leds();
+    
     while (true)
     {
-        if (!modo_noturno)
+        if (modo_noturno) // SE ESTIVER NO MODO NOTUNO DESLIGA A MATRIZ DE LEDS E OS ESTADOS DOS SEMAFOROS
         {
-            gpio_put(LED_VERDE, false);
-            gpio_put(LED_VERMELHO, false);
-            vTaskDelay(pdMS_TO_TICKS(100));
-            continue;
-        }
-
-        gpio_put(LED_VERDE, true);
-        gpio_put(LED_VERMELHO, true);
-        vDelayComModoDiurno(1000); // 1 segundo aceso
-
-        gpio_put(LED_VERDE, false);
-        gpio_put(LED_VERMELHO, false);
-        vDelayComModoDiurno(1000); // 1 segundo apagado
-    }
-}
-
-void vDelayComModoNoturno(int tempo_ms)
-{
-    for (int i = 0; i < tempo_ms; i += 100)
-    {
-        if (modo_noturno)
-            break;
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
-}
-
-void vSemaforo_diurno()
-{
-    while (true)
-    {
-        if (modo_noturno) {
             estado_vermelho = false;
             estado_amarelo = false;
             estado_verde = false;
@@ -87,87 +44,193 @@ void vSemaforo_diurno()
             continue;
         }
 
-        estado_vermelho = true;
+        estado_vermelho = true; // DEFINE O ESTADO VERMELHO DO SEMAFORO POR 7 SEGUNDOS
         desenha_fig(semaforo_vermelho, BRILHO_PADRAO, pio, sm);
-        vDelayComModoNoturno(7000);
-        if (modo_noturno) continue;
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        // vDelayComModoDiurno(2000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
+        if (modo_noturno)
+            continue;
 
         estado_vermelho = false;
-        estado_amarelo = true;
+        estado_amarelo = true; // DEFINE O ESTADO AMARELO DO SEMAFORO POR 1 SEGUNDOS
         desenha_fig(semaforo_amarelo, BRILHO_PADRAO, pio, sm);
-        vDelayComModoNoturno(1000);
-        if (modo_noturno) continue;
+        vTaskDelay(pdMS_TO_TICKS(500));
+        // vDelayComModoDiurno(500); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
+        if (modo_noturno)
+            continue;
 
         estado_amarelo = false;
-        estado_verde = true;
+        estado_verde = true; // DEFINE O ESTADO VERDE DO SEMAFORO POR 4 SEGUNDOS
         desenha_fig(semaforo_verde, BRILHO_PADRAO, pio, sm);
-        vDelayComModoNoturno(4000);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        // vDelayComModoDiurno(1000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
         estado_verde = false;
     }
 }
 
-void vDisplay3Task()
+void vSemaforo_noturno() // TAREFA PARA EXIBIR O SEMAFORO NOTURNO
 {
-    i2c_init(I2C_PORT, 400 * 1000);
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
+    gpio_init(LED_VERDE);
+    gpio_init(LED_VERMELHO);
+    gpio_set_dir(LED_VERDE, GPIO_OUT);
+    gpio_set_dir(LED_VERMELHO, GPIO_OUT);
 
-    ssd1306_t ssd;
-    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT);
-    ssd1306_config(&ssd);
-    ssd1306_send_data(&ssd);
-    ssd1306_fill(&ssd, false);
-    ssd1306_send_data(&ssd);
+    while (true)
+    {
+        if (!modo_noturno) // CASO O MODO NOTURNO SEJA DESLIGADO, DESLIGA TAMBÉM O LED RGB
+        {
+            gpio_put(LED_VERDE, false);
+            gpio_put(LED_VERMELHO, false);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            continue;
+        }
+        desenha_fig(matriz_apagada, BRILHO_PADRAO, pio, sm);
+        gpio_put(LED_VERDE, true); // DEIXA O LED ALTERNADO ENTRE ACESO E APAGADO NO PERIODO DE 2 SEGUNDOS
+        gpio_put(LED_VERMELHO, true);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        // vDelayComModoNoturno(1000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
 
+        gpio_put(LED_VERDE, false);
+        gpio_put(LED_VERMELHO, false);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        // vDelayComModoNoturno(1000); // ACIONA O vTaskDelay DE FORMA FRACIONADA, CASO HAJA QUALQUER MUDANÇA ELE É INTERROMPIDO IMEDIATAMENTE
+    }
+}
+
+void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
+{
+    inicializar_display_i2c();
     char str_y[5];
     int contador = 0;
     bool cor = true;
 
     while (true)
     {
-        if (modo_noturno)
+        if (modo_noturno) // VERIFICA SE O MODO NOTURNO ESTÁ ATIVADO, CASO ESTEJA INFORMA QUE ESTÁ NO MODO NOTURNO
         {
             // Exibe o modo noturno no display
             ssd1306_fill(&ssd, !cor);
             ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-            ssd1306_draw_string(&ssd, "MODO NOTURNO", 20, 16);
+            ssd1306_draw_string(&ssd, "MODO NOITE", 20, 16);
             ssd1306_send_data(&ssd);
             vTaskDelay(pdMS_TO_TICKS(10));
         }
         else
         {
-            // Exibe o modo diurno com as cores do semáforo
-            if (estado_vermelho)
+            /// VERIFICA SE O MODO NORMAL ESTÁ ATIVADO, CASO ESTEJA INFORMA QUE ESTÁ NO MODO NORMAL
+            if (estado_vermelho) // SE O SEMAFORO ESTIVER NO ESTADO VERMELHO EXIBE VERMELHO NO DISPLAY
             {
                 sprintf(str_y, "%d", contador);
                 ssd1306_fill(&ssd, !cor);
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-                ssd1306_draw_string(&ssd, "MODO DIURNO", 20, 16);
+                ssd1306_draw_string(&ssd, "MODO NORMAL", 20, 16);
                 ssd1306_draw_string(&ssd, "VERMELHO", 32, 30);
                 ssd1306_send_data(&ssd);
             }
-            else if (estado_amarelo)
+            else if (estado_amarelo) // SE O SEMAFORO ESTIVER NO ESTADO AMARELO EXIBE AMARELO NO DISPLAY
             {
                 sprintf(str_y, "%d", contador);
                 ssd1306_fill(&ssd, !cor);
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-                ssd1306_draw_string(&ssd, "MODO DIURNO", 20, 16);
+                ssd1306_draw_string(&ssd, "MODO NORMAL", 20, 16);
                 ssd1306_draw_string(&ssd, "AMARELO", 34, 30);
                 ssd1306_send_data(&ssd);
             }
-            else if (estado_verde)
+            else if (estado_verde) // SE O SEMAFORO ESTIVER NO ESTADO VERDE EXIBE VERDE NO DISPLAY
             {
                 sprintf(str_y, "%d", contador);
                 ssd1306_fill(&ssd, !cor);
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-                ssd1306_draw_string(&ssd, "MODO DIURNO", 20, 16);
+                ssd1306_draw_string(&ssd, "MODO NORMAL", 20, 16);
                 ssd1306_draw_string(&ssd, "VERDE", 44, 30);
                 ssd1306_send_data(&ssd);
             }
             vTaskDelay(pdMS_TO_TICKS(10));
         }
+    }
+}
+
+
+void vTocarBuzzer(void *pvParameters) {
+    gpio_set_function(10, GPIO_FUNC_PWM); // Configura GPIO 10 como PWM
+    uint slice = pwm_gpio_to_slice_num(10);
+
+    // Configuração de PWM: ~1.2 kHz com duty de 50%
+    pwm_set_clkdiv(slice, 4.0f);
+    pwm_set_wrap(slice, 41666);
+    pwm_set_chan_level(slice, PWM_CHAN_A, 20833); // 50% duty
+
+    while (true) {
+        if (!modo_noturno) {
+            if (estado_vermelho) {
+                pwm_set_enabled(slice, true);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                pwm_set_enabled(slice, false);
+
+                // Divide o silêncio de 1500ms em 3x de 500ms
+                for (int i = 0; i < 3; i++) {
+                    vTaskDelay(pdMS_TO_TICKS(500));
+                    if (!estado_vermelho) break;
+                }
+            } 
+            else if (estado_amarelo) {
+                for (int i = 0; i < 3; i++) {
+                    if (!estado_amarelo) break;
+                    pwm_set_enabled(slice, true);
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                    pwm_set_enabled(slice, false);
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                }
+                vTaskDelay(pdMS_TO_TICKS(200)); // Completa 1s
+            } 
+            else if (estado_verde) {
+                pwm_set_enabled(slice, true);
+                vTaskDelay(pdMS_TO_TICKS(100));
+                pwm_set_enabled(slice, false);
+
+                for (int i = 0; i < 9; i++) {
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                    if (!estado_verde) break;
+                }
+            } 
+            else {
+                pwm_set_enabled(slice, false);
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+        } else {
+            pwm_set_enabled(slice, true);
+            vDelayComModoNoturno(200); // 200ms de som
+            pwm_set_enabled(slice, false);
+            vDelayComModoNoturno(2000); // 2s de silêncio
+        }
+    }
+}
+
+
+
+/*******************************************************
+
+                      FUNÇÕES AUXILIARES
+
+****************************************************** */
+
+void vDelayComModoNoturno(int tempo_ms) // FUNÇÃO PARA VERIFICAR SE O MODO NOTURNO ESTÁ ATIVADO DURANTE O DELAY
+{
+    for (int i = 0; i < tempo_ms; i += 100) // DADO O INTERVALO ELE VERIFICA A CADA 100 MILISSEGUNDOS
+    {
+        if (!modo_noturno)
+            break; // SE O MODO NOTURNO FOR ATIVADO, ELE INTERROMPE AUTOMATICAMENTE O DELAY PARA QUE O SISTEMA SEJA DESLIGADO
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+void vDelayComModoDiurno(int tempo_ms) // FUNÇÃO PARA VERIFICAR SE O MODO NORMAL ESTÁ ATIVADO DURANTE O DELAY
+{
+    for (int i = 0; i < tempo_ms; i += 100) // DADO O INTERVALO ELE VERIFICA A CADA 100 MILISSEGUNDOS
+    {
+        if (modo_noturno)
+            break; // SE O MODO NORMAL FOR ATIVADO, ELE INTERROMPE AUTOMATICAMENTE O DELAY PARA QUE O SISTEMA SEJA DESLIGADO
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -179,7 +242,7 @@ void gpio_irq_handler(uint gpio, uint32_t events)
     reset_usb_boot(0, 0);
 }
 
-void desenha_fig(uint32_t *_matriz, uint8_t _intensidade, PIO pio, uint sm)
+void desenha_fig(uint32_t *_matriz, uint8_t _intensidade, PIO pio, uint sm) // FUNÇÃO PARA DESENHAR O SEMAFORO NA MATRIZ
 {
     uint32_t pixel = 0;
     uint8_t r, g, b;
@@ -240,8 +303,33 @@ void desenha_fig(uint32_t *_matriz, uint8_t _intensidade, PIO pio, uint sm)
         pio_sm_put_blocking(pio, sm, pixel << 8u);
     }
 }
+
+void configurar_matriz_leds() // FUNÇÃO PARA CONFIGURAR O PIO PARA USAR NA MATRIZ DE LEDS
+{
+    bool clock_setado = set_sys_clock_khz(133000, false);
+    pio = pio0;
+    sm = pio_claim_unused_sm(pio, true);
+    uint offset = pio_add_program(pio, &Matriz_5x5_program);
+    Matriz_5x5_program_init(pio, sm, offset, MATRIZ_PIN);
+}
+
+void inicializar_display_i2c(){ //FUNÇÃO PARA INICIALIZAR O I2C DO DISPLAY
+    i2c_init(I2C_PORT, 400 * 1000);
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
+
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT);
+    ssd1306_config(&ssd);
+    ssd1306_send_data(&ssd);
+    ssd1306_fill(&ssd, false);
+    ssd1306_send_data(&ssd);
+}
+
 int main()
 {
+    
     // Para ser utilizado o modo BOOTSEL com botão B
     gpio_init(botaoB);
     gpio_set_dir(botaoB, GPIO_IN);
@@ -249,41 +337,17 @@ int main()
     gpio_set_irq_enabled_with_callback(botaoB, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     // Fim do trecho para modo BOOTSEL com botão B
 
-    // Define o PIO 0 para controle da matriz de LEDs
-    pio = pio0;
-
-    // Configura o clock do sistema para 133 MHz
-    bool clock_setado = set_sys_clock_khz(133000, false);
-
-    // Inicializa a comunicação serial
     stdio_init_all();
 
-    // Exibe mensagem na serial caso o clock tenha sido configurado com sucesso
-    if (clock_setado)
-        printf("Clock setado %ld\n", clock_get_hz(clk_sys));
-
-    // Carrega o programa PIO para controle da matriz de LEDs
-    int offset = pio_add_program(pio, &Matriz_5x5_program);
-
-    // Obtém um state machine livre para o PIO
-    sm = pio_claim_unused_sm(pio, true);
-
-    // Inicializa o programa PIO na matriz de LEDs
-    Matriz_5x5_program_init(pio, sm, offset, MATRIZ_PIN);
-
-    desenha_fig(semaforo_verde, BRILHO_PADRAO, pio, sm);
-
-    stdio_init_all();
-
-    // xTaskCreate(vBlinkLed1Task, "Blink Task Led1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
-
-    xTaskCreate(vSemaforo_noturno, "Blink Task Led2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(vSemaforo_noturno, "Semaforo noturno", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 
     xTaskCreate(vSemaforo_diurno, "Semaforo diurno", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 
     xTaskCreate(vAcionarBotao, "Acionar botão", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 
-    xTaskCreate(vDisplay3Task, "Cont Task Disp3", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(vAtualizarDisplay, "Atualiza display", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
+
+    xTaskCreate(vTocarBuzzer, "Tocar buzzer", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 
     vTaskStartScheduler();
 

@@ -7,9 +7,11 @@
 // Bibliotecas do Raspberry Pi Pico
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
+#include "hardware/pwm.h"
 #include "hardware/i2c.h"
 #include "hardware/pio.h"    // Controle do PIO (Programável I/O)
 #include "hardware/clocks.h" // Manipulação de clock
+
 
 // Bibliotecas para displays e fontes
 #include "lib/ssd1306.h"
@@ -31,6 +33,8 @@
 #define I2C_SDA 14
 #define I2C_SCL 15
 #define endereco 0x3C
+#define BUZZER_PIN 21  // Pino conectado ao buzzer
+#define FREQUENCIA_PWM 1000 // Frequência do PWM (1 kHz)
 
 // Matriz de LEDs
 #define MATRIZ_PIN 7          // Pino da matriz de LEDs
@@ -52,12 +56,15 @@ bool modo_noturno = false;
 bool estado_verde = false;
 bool estado_amarelo = false;
 bool estado_vermelho = true;
+ssd1306_t ssd;
 
 void vAcionarBotao(void *pvParameters);
-void vDelayComModoDiurno(TickType_t delay_ms);
-void vSemaforo_noturno();
 void vDelayComModoNoturno(int tempo_ms);
+void vSemaforo_noturno();
+void vDelayComModoDiurno(int tempo_ms);
 void vSemaforo_diurno();
-void vDisplay3Task();
+void vAtualizarDisplay();
+void configurar_matriz_leds();
+void inicializar_display_i2c();
 void desenha_fig(uint32_t *_matriz, uint8_t _intensidade, PIO pio, uint sm);
 #endif   // SEMAFORO_MULTITAREFA
