@@ -27,7 +27,7 @@ Luz amarela do led RGB piscando em um periodo de 2s, beep lento de 200ms a cada 
 
 #### Usando a BitDogLab
 
-- Clone este repositório: git clone https://github.com/rober1o/ohmimetro.git](https://github.com/rober1o/semaforo_multitarefa.git;
+- Clone este repositório: git clone (https://github.com/rober1o/semaforo_multitarefa.git;
 - Usando a extensão Raspberry Pi Pico importar o projeto;
 - Compilar o projeto;
 - Plugar a BitDogLab usando um cabo apropriado e gravar o código.
