@@ -34,8 +34,7 @@
 #define I2C_SDA 14
 #define I2C_SCL 15
 #define endereco 0x3C
-#define BUZZER_PIN 21  // Pino conectado ao buzzer
-#define FREQUENCIA_PWM 1000 // Frequência do PWM (1 kHz)
+#define BUZZER_PIN 10  // Pino conectado ao buzzer
 
 // Matriz de LEDs
 #define MATRIZ_PIN 7          // Pino da matriz de LEDs
@@ -53,17 +52,16 @@
 // Instâncias e variáveis globais
 PIO pio;  // Instância do PIO
 int sm;    // Máquina de estado do PIO
+ssd1306_t ssd; // display ssd
 bool modo_noturno = false;
 bool estado_verde = true;
 bool estado_amarelo = false;
 bool estado_vermelho = false;
-ssd1306_t ssd;
+
 
 void vAcionarBotao(void *pvParameters);
-void vDelayComModoNoturno(int tempo_ms);
 void vSemaforo_noturno();
-void vDelayComModoDiurno(int tempo_ms);
-void vSemaforo_diurno();
+void vSemaforo_normal();
 void vAtualizarDisplay();
 void configurar_matriz_leds();
 void inicializar_display_i2c();
