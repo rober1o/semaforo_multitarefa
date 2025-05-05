@@ -21,7 +21,7 @@ Apaga o amarelo e Acende a luz vermelha na matriz de leds por 2 s segundos e toc
 
 Caso o botão A seja pressionado, alterna para o modo noturno, que operará da segunte forma
 
-Luz amarela do led RGB piscando em um periodo de 2s, beep lento de 200ms a cada 2s, no display aparece a imagem de um sol e a mensagem CUIDADO
+Luz amarela do led RGB piscando em um periodo de 2s, beep lento de 200ms a cada 2s, no display aparece a imagem de uma lua e a mensagem CUIDADO
 
 ### Como Usar
 
