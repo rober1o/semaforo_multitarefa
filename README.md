@@ -1,0 +1,38 @@
+# SEMÁFORO MULTITAREFA
+
+O projeto tem por finalidade criar um semáforo acessível que opere no modo normal e noturno, oferecendo sinais visuais e sonoros garantindo a segurança de todos, incluindo deficientes visuais. Além disso o projeto usa conceitos de multitarefas para gerenciar diferentes periféricos ao mesmo tempo.
+
+## Componentes Utilizados
+
+
+1. **Botão Pushbutton**
+2. **Display OLED 1306**
+3. **Buzzer**
+4. **Matriz de LED 5x5 WS2812** 
+5. **Led RGB**
+
+## Funcionalidade
+
+Ao inciar o programa o semaforo operará no modo normal da segunte forma:
+
+Acende a luz verde  na matriz de leds por 1 s e toca um beep no buzzer por 100ms, no display aparece a imagem de um sol e a mensagem Verde --atravesse--
+Apaga o Verde e Acende a luz amarela  na matriz de leds por 400 ms segundos e toca 3 beeps rápidos e intermitentes, no display aparece a imagem de um sol e a mensagem Amarelo --atenção--
+Apaga o amarelo e Acende a luz vermelha na matriz de leds por 2 s segundos e toca um beep continuo por 500ms, no display aparece a imagem de um sol e a mensagem Vermelho --pare--
+
+Caso o botão A seja pressionado, alterna para o modo noturno, que operará da segunte forma
+
+Luz amarela do led RGB piscando em um periodo de 2s, beep lento de 200ms a cada 2s, no display aparece a imagem de um sol e a mensagem CUIDADO
+
+### Como Usar
+
+#### Usando a BitDogLab
+
+- Clone este repositório: git clone https://github.com/rober1o/ohmimetro.git](https://github.com/rober1o/semaforo_multitarefa.git;
+- Usando a extensão Raspberry Pi Pico importar o projeto;
+- Compilar o projeto;
+- Plugar a BitDogLab usando um cabo apropriado e gravar o código.
+
+## Demonstração
+
+<!-- TODO: adicionar link do vídeo -->
+Vídeo demonstrando as funcionalidades da solução implementada: [Demonstração](https://youtu.be/LSdC7LYecy4)
