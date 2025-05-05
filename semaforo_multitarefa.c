@@ -113,7 +113,8 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
             // Exibe o modo noturno no display
             ssd1306_fill(&ssd, !cor);
             ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
-            ssd1306_draw_string(&ssd, "MODO NOITE", 20, 16);
+            ssd1306_draw_string(&ssd, "CUIDADO", 20, 45);
+            draw_ssd1306(lua);
             ssd1306_send_data(&ssd);
             vTaskDelay(pdMS_TO_TICKS(10));
         }
@@ -127,7 +128,7 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
                 ssd1306_draw_string(&ssd, "VERMELHO", 32, 30);
                 ssd1306_draw_string(&ssd, "--pare--", 34, 45);
-                draw_ssd1306(bonequinho);
+                draw_ssd1306(sol);
                 ssd1306_send_data(&ssd);
             }
             else if (estado_amarelo) // SE O SEMAFORO ESTIVER NO ESTADO AMARELO EXIBE AMARELO NO DISPLAY
@@ -138,7 +139,7 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
 
                 ssd1306_draw_string(&ssd, "AMARELO", 34, 30);
                 ssd1306_draw_string(&ssd, "--atencao--", 16, 45);
-                draw_ssd1306(bonequinho);
+                draw_ssd1306(sol);
                 ssd1306_send_data(&ssd);
             }
             else if (estado_verde) // SE O SEMAFORO ESTIVER NO ESTADO VERDE EXIBE VERDE NO DISPLAY
@@ -148,7 +149,7 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
                 ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
                 ssd1306_draw_string(&ssd, "VERDE", 44, 30);
                 ssd1306_draw_string(&ssd, "--atravesse--", 12, 45);
-                draw_ssd1306(bonequinho);
+                draw_ssd1306(sol);
                 ssd1306_send_data(&ssd);
                 
 

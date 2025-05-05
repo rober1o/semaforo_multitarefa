@@ -20,6 +20,7 @@
 // Arquivos específicos do projeto
 #include "pio_wave.pio.h"  // Código PIO
 #include "lib/matriz_5X5.h"         // Arrays para exibir na matriz de LED
+#include "lib/desenhos.h"
 
 
 // Bibliotecas para FreeRTOS
