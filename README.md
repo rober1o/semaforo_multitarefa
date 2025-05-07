@@ -36,4 +36,4 @@ Luz amarela do led RGB piscando em um periodo de 2s, beep lento de 200ms a cada 
 ## Demonstração
 
 <!-- TODO: adicionar link do vídeo -->
-Vídeo demonstrando as funcionalidades da solução implementada: [Demonstração](https://youtu.be/LSdC7LYecy4)
+Vídeo demonstrando as funcionalidades da solução implementada: [Demonstração](https://youtu.be/LSdC7LYecy4](https://youtu.be/nhr6UkEngDA)](https://youtu.be/nhr6UkEngDA )
