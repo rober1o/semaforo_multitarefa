@@ -6,7 +6,7 @@
 
 ****************************************************** */
 
-void vAcionarBotao(void *pvParameters) // TAFERA PARA ALTERNA ENTRE MODO DIURNO  NPOTURNO
+void vAcionarBotao(void *pvParameters) // TAFERA PARA ALTERNA ENTRE MODO DIURNO  NOTURNO -- TRABALHA COM O PERIFERICO BOTÃO A
 {
     gpio_init(BOTAO_A);
     gpio_set_dir(BOTAO_A, GPIO_IN);
@@ -28,7 +28,7 @@ void vAcionarBotao(void *pvParameters) // TAFERA PARA ALTERNA ENTRE MODO DIURNO 
     }
 }
 
-void vSemaforo_normal() // TAREFA PARA EXIBIR O SEMAFORO NO MODO NORMAL
+void vSemaforo_normal() // TAREFA PARA EXIBIR O SEMAFORO NO MODO NORMAL -- TRABALHA COM O PERIFERICO MATRIZ DE LEDS
 {
     configurar_matriz_leds(); // configurações iniciais para usar o PIO e a matriz de leds
 
@@ -46,7 +46,7 @@ void vSemaforo_normal() // TAREFA PARA EXIBIR O SEMAFORO NO MODO NORMAL
 
         // RODA O CÓDIGO ABAIXO SE NÃO TIVER NO MODO NOTURNO
 
-        estado_verde = true; // DEFINE O ESTADO VERDE DO SEMAFORO POR 1 SEGUNDO
+        estado_verde = true; // DEFINE O ESTADO VERDE DO SEMÁFORO POR ATÉ 4 SEGUNDOS
         desenha_fig(semaforo_verde, BRILHO_PADRAO, pio, sm);
 
         for (int i = 0; i < 40; i++)
@@ -61,7 +61,7 @@ void vSemaforo_normal() // TAREFA PARA EXIBIR O SEMAFORO NO MODO NORMAL
             continue;
 
         estado_verde = false;
-        estado_amarelo = true; // DEFINE O ESTADO AMARELO DO SEMAFORO POR 1 SEGUNDO
+        estado_amarelo = true; // DEFINE O ESTADO AMARELO DO SEMAFORO POR ATÉ 1 SEGUNDO
         desenha_fig(semaforo_amarelo, BRILHO_PADRAO, pio, sm);
 
         for (int i = 0; i < 10; i++)
@@ -92,7 +92,7 @@ void vSemaforo_normal() // TAREFA PARA EXIBIR O SEMAFORO NO MODO NORMAL
     }
 }
 
-void vSemaforo_noturno() // TAREFA PARA EXIBIR O SEMAFORO NOTURNO
+void vSemaforo_noturno() // TAREFA PARA EXIBIR O SEMAFORO NOTURNO -- TRABALHA COM O PERIFERICO LED RGB
 {
     gpio_init(LED_VERDE);
     gpio_init(LED_VERMELHO);
@@ -117,7 +117,7 @@ void vSemaforo_noturno() // TAREFA PARA EXIBIR O SEMAFORO NOTURNO
     }
 }
 
-void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
+void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY -- TRABALHA COM O PERIFERICO DISPLAY OLED
 {
     inicializar_display_i2c(); // CONFIGURAÇÕES INICIAIS PARA USAR O DISPLAY
     char str_y[5];
@@ -174,7 +174,7 @@ void vAtualizarDisplay() // TAREFA PARA ATUALIZAR INFORMAÇÕES NO DISPLAY
     }
 }
 
-void vTocarBuzzer(void *pvParameters)
+void vTocarBuzzer(void *pvParameters) // TAREFA  PARA TRABALHAR COM O PERIFERICO BUZZER
 {
 
     gpio_set_function(BUZZER_PIN, GPIO_FUNC_PWM); // Configura GPIO 10 como PWM
